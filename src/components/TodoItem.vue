@@ -167,7 +167,8 @@ function cyclePriority() {
                         type="button"
                         class="priority-badge"
                         :title="`${t('priorityNames')[todo.priority]} · ${t('priorityHint')}`"
-                        @click.stop="cyclePriority">P{{ todo.priority }}</button><span class="todo-text">{{ todo.title }}</span>
+                        @click.stop="cyclePriority"
+                        @dblclick.stop>P{{ todo.priority }}</button><span class="todo-text">{{ todo.title }}</span>
                 </div>
 
                 <div v-if="todo.images.length" class="todo-images">
