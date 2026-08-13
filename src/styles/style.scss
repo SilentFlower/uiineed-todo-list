@@ -1,3 +1,7 @@
+@use 'sass:map';
+@use 'sass:meta';
+@use 'sass:string';
+
 $breakpoints: ('xs': 'only screen and  (max-width: 350px)',
     'sm': 'only screen and  (max-width: 640px)',
     'md': 'only screen and ( max-width: 768px)',
@@ -5,13 +9,19 @@ $breakpoints: ('xs': 'only screen and  (max-width: 350px)',
 ) !default;
 
 @mixin respond-to($breakpoint) {
-    $query: map-get($breakpoints, $breakpoint);
+    $query: map.get($breakpoints, $breakpoint);
 
     @if not $query {
         @error 'No value found for `#{$breakpoint}`. Please make sure it is defined in `$breakpoints` map.';
     }
 
-    @media #{if(type-of($query) == 'string', unquote($query), inspect($query))} {
+    // 断点值统一以带引号的字符串书写，拼进 @media 前需要先去掉引号
+    $media: meta.inspect($query);
+    @if meta.type-of($query) == 'string' {
+        $media: string.unquote($query);
+    }
+
+    @media #{$media} {
         @content;
     }
 }
@@ -516,20 +526,26 @@ h1 {
     box-shadow: none;
 }
 
-.todo-content {
+// 待办卡片的内容区。外层 .todo-body 负责底色与留白，
+// 内层 .todo-content 只承载文字，方便单独做折叠与删除线。
+.todo-body {
     padding: var(--padding);
+    padding-left: 56px;
+    padding-right: 56px;
     background: var(--bg-normal);
     border-radius: var(--border-radius);
     width: 100%;
     position: relative;
     box-sizing: border-box;
+    min-height: 60px;
+}
+
+.todo-content {
     display: block;
     line-height: 1.5;
     overflow-wrap: break-word;
-    padding-left: 56px;
-    padding-right: 56px;
+    white-space: pre-wrap;
     cursor: pointer;
-    min-height: 60px;
 }
 
 .todo-btn {
@@ -708,118 +724,6 @@ h1 {
         top: 4px;
     }
  }
- .about{
-     .info-ico{
-        position: relative;
-        z-index: 9999;
-        margin:10px;
-        display: flex;
-        align-items: center;
-        justify-items: flex-start;
-        cursor: pointer;
-        transition: all 0.3s;
-        img{
-            width:auto;height:40px;display: inline-block;
-            border-radius: 48px;
-        }
-        &:hover{
-           font-weight: bold!important;
-        }
-     }
- }
- .github{
-    font-size: 0;
-    display: inline-block;
-    padding: 6px;
- }
-.popup{
-    display: block;
-    position: absolute;
-    top: 36px;
-    right: 24px;
-    z-index: 999;
-    transition: 0.25s;
-    border-radius: 8px;
-    -webkit-border-radius: 8px;
-    -moz-border-radius: 8px;
-    box-shadow: var(--box-shadow);
-    border:2px solid var(--black);
-    padding:24px;
-    background-color: #fff;
-    width: 220px;
-    .author{
-        font-size: 16px;
-        font-weight: bold;
-        font-style: normal;
-        margin:0px 0 12px;
-        text-align: center;
-        display: flex;
-        align-items: center;
-        justify-content: start;
-        &-desc{
-            font-size: 15px;
-            font-style: normal;
-            line-height: 1.4;
-            color: #606060;
-        }
-        img{
-            margin-right: 8px;
-            width: 44px;
-            height: 44px;
-            border-radius: 48px;
-            display: inline-block;
-        }
-
-    }
-    p{
-        font-size: 12px;
-        font-style: normal;
-        line-height: 1.5;
-        padding:2px;
-        text-align: center;
-        margin: -8px auto 8px;
-        span{
-            opacity: 0.75;
-        }
-    }
-
-    img{
-        width: 148px;
-        height: 148px;
-        border-radius: 8px;
-        -webkit-border-radius: 8px;
-        -moz-border-radius: 8px;
-
-    }
-    @include respond-to('md') {
-        img{
-            width: 160px;
-            height: 160px;
-        }
-    }
-}
-.donate{
-    margin:12px 0;
-}
-.zanshan{
-    margin:12px 0 0;
-}
-.zanshan p{
-    font-size:14px;
-    text-align:left;
-    display:block;
-    margin:12px 0 6px;
-}
-img.zanshan-qr{
-    width:100%;
-    height:auto;
-}
-.donate a{
-    display: block;
-    position: relative;
-    outline: none;
-    width: 100%;
-}
 .language{
     position: relative;
     display: inline-block;
@@ -845,57 +749,6 @@ img.zanshan-qr{
     font-weight: 600;
 }
 
-.social {
-    margin: 0 auto;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: flex-start;
-    margin:12px 0;
-}
-.social-link{
-    opacity: 0.65;
-    outline: none;
-}.social-link:hover{
-    opacity: 1;
-}
-.social-link img {
-    fill: #33322E;
-    width: auto;
-    height: 20px;
-    color: #33322E;
-}
-.ic-social {
-    fill:#33322E;
-    width: auto;
-    height: 20px;
-}
-
-.inspiration{
-    position: relative;
-    text-align: left;
-    font-style: normal;
-    display: block;
-    margin:6px auto 0px;
-    width: 100%;
-    font-size: 14px;
-    letter-spacing: 0.36px;
-    color: #606060;
-}
-a.inspiration:focus{
-    -webkit-user-modify:unset;
-}
-.inspiration img{
-    display: inline-block;
-    margin-right: 5px;
-    width: 20px;
-    height: 20px;
-    border-radius: 2px;
-}
-
-
-
-// side bar
 .side-bar{
     position: absolute;
     left:calc( 100% + 28px);
@@ -1430,4 +1283,496 @@ span.shortcut-name{
         -webkit-transform: scale3d(0.3, 0.3, 0.3);
         transform: scale3d(0.3, 0.3, 0.3)
     }
+}
+
+/**
+ * ── 以下为 2.0 改造新增：登录、用户区、图片附件、内容折叠 ──
+ */
+
+/* 登录页 */
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 32px;
+    background: var(--bg-normal);
+    border: var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.login-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.login-subtitle {
+    font-size: 14px;
+    color: #606060;
+    margin-bottom: 24px;
+}
+
+.login-field {
+    display: block;
+    margin-bottom: 16px;
+}
+
+.login-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.login-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-family: var(--font);
+    font-size: var(--font-size-base);
+    color: var(--font-color);
+    background: #fff;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    outline: none;
+
+    &:focus {
+        box-shadow: var(--box-shadow);
+    }
+}
+
+.login-error {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #33322E;
+    background: var(--bg-discard);
+    border: var(--border);
+    border-radius: var(--border-radius);
+}
+
+.login-submit {
+    width: 100%;
+    background: var(--bg-submit);
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.login-language {
+    margin-top: 20px;
+    text-align: center;
+    display: block;
+}
+
+/* 右上角用户区 */
+.user-menu {
+    position: relative;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px 5px 5px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--font-color);
+    background: #fff;
+    border: var(--border);
+    border-radius: 40px;
+    cursor: pointer;
+    max-width: 180px;
+
+    &:hover,
+    &.open {
+        box-shadow: var(--box-shadow);
+        transform: translate(-2px, -2px);
+    }
+}
+
+.user-avatar {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    line-height: 24px;
+    text-align: center;
+    font-weight: 800;
+    border-radius: 50%;
+    background: var(--bg-submit);
+    border: var(--border);
+}
+
+.user-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-popup {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    z-index: 9999;
+    width: 200px;
+    padding: 16px;
+    background: #fff;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.user-popup-name {
+    font-weight: 700;
+    margin-bottom: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-logout {
+    width: 100%;
+    background: var(--bg-discard);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--deleted);
+    }
+}
+
+/* 菜单展开时的透明遮罩，点任意处收起 */
+.user-menu-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+}
+
+/* 内容折叠 */
+.todo-content.clamped {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.todo-toggle {
+    margin-top: 8px;
+    padding: 0;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 600;
+    color: #606060;
+    background: none;
+    border: none;
+    border-bottom: 2px solid rgba(51, 50, 46, 0.35);
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--font-color);
+        border-bottom-color: var(--black);
+    }
+}
+
+/* 已完成时只给文字加删除线，图片和展开按钮不受影响 */
+.todo-body.completed .todo-images,
+.todo-body.completed .todo-toggle {
+    text-decoration: none;
+}
+
+/* 图片附件 */
+.todo-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.todo-image {
+    position: relative;
+    width: 96px;
+    height: 96px;
+    border: var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: zoom-in;
+    background: #fff;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    &:hover {
+        box-shadow: var(--box-shadow);
+        transform: translate(-2px, -2px);
+    }
+}
+
+.todo-images.editing .todo-image {
+    cursor: default;
+}
+
+/* 收起状态下盖在最后一张图上的「还有 N 张」提示 */
+.todo-image-more {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    background: rgba(51, 50, 46, 0.6);
+}
+
+.todo-image-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    line-height: 1;
+    font-size: 12px;
+    color: var(--font-color);
+    background: #fff;
+    border: var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:hover {
+        background: var(--deleted);
+    }
+}
+
+/* 回收站条目要放下「还原」和「彻底删除」两个按钮 */
+.todo-item.in-trash .todo-body {
+    padding-right: 96px;
+}
+
+.btn-restore {
+    right: 52px;
+}
+
+.btn-delete-forever {
+    background: #fff;
+    right: 12px;
+    top: 16px;
+    height: 30px;
+    width: 30px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background: var(--deleted);
+    }
+
+    img {
+        display: block;
+        width: 15px;
+        height: auto;
+    }
+}
+
+/* 新增框：支持多行与图片 */
+.add-content {
+    resize: none;
+    overflow: hidden;
+    font-family: var(--font);
+}
+
+.compose-tools {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.compose-hint {
+    font-size: 13px;
+    color: #606060;
+}
+
+.btn-add-image {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--font-color);
+    background: #fff;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--bg-completed);
+        box-shadow: var(--box-shadow);
+        transform: translate(-2px, -2px);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.compose-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* 图片大图预览 */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(51, 50, 46, 0.85);
+}
+
+.lightbox-image {
+    max-width: 88vw;
+    max-height: 86vh;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background: #fff;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    color: var(--font-color);
+    background: #fff;
+    border: var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--font-color);
+    background: #fff;
+    border: var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+
+    &.prev { left: 24px; }
+    &.next { right: 24px; }
+}
+
+.lightbox-counter {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    background: #fff;
+    border: var(--border);
+    border-radius: 20px;
+}
+
+/* 首屏登录态探测时的占位 */
+.app-loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #606060;
+}
+
+/* 提示 / 确认对话框 */
+.custom-alert-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(51, 50, 46, 0.5);
+    z-index: 10001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-alert {
+    background: var(--bg-normal);
+    border: var(--border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 90%;
+    max-width: 400px;
+    padding: 24px;
+    position: relative;
+    font-family: var(--font);
+    animation: popIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.custom-alert-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: var(--font-color);
+}
+
+.custom-alert-content {
+    font-size: var(--font-size-base);
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.custom-alert-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.custom-alert-btn {
+    padding: var(--btn-small-padding);
+    border: var(--border);
+    border-radius: var(--border-radius);
+    background: var(--bg-submit);
+    font-family: var(--font);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.35s;
+
+    &:hover {
+        box-shadow: var(--box-shadow);
+        transform: translate(-2px, -2px);
+    }
+
+    &.confirm { background: var(--completed); }
+    &.cancel { background: var(--deleted); }
 }
