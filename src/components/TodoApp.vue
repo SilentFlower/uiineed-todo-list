@@ -29,7 +29,9 @@ import {
     PRIORITY_LEVELS,
     priorityFilter,
     recycleBin,
-    todos
+    sortByPriority,
+    todos,
+    toggleSortByPriority
 } from '../composables/useTodos.js'
 import { addTodo } from '../composables/useTodos.js'
 
@@ -446,6 +448,18 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', flushIfPending)
                                     :value="`P${level}`"
                                     :title="t('priorityNames')[level]"
                                     @click="priorityFilter = priorityFilter === level ? null : level" />
+                            </li>
+                        </ul>
+
+                        <ul class="todo-func-list sort-switch">
+                            <li>
+                                <input
+                                    type="button"
+                                    class="btn-small action-sort"
+                                    :class="{ selected: sortByPriority }"
+                                    :value="`⇅ ${t('sortByPriority')}`"
+                                    :title="sortByPriority ? t('sortOnDragOff') : ''"
+                                    @click="toggleSortByPriority" />
                             </li>
                         </ul>
 

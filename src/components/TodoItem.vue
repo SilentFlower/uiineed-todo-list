@@ -14,7 +14,8 @@ import {
     persist,
     restoreTodo,
     setCompleted,
-    setPriority
+    setPriority,
+    sortByPriority
 } from '../composables/useTodos.js'
 import { imagesFromClipboard } from '../utils/image.js'
 
@@ -151,7 +152,7 @@ function cyclePriority() {
     <li
         class="todo-item"
         :class="{ 'is-expanded': expanded, 'in-trash': todo.removed }"
-        :draggable="!editing"
+        :draggable="!editing && !sortByPriority"
         @dragstart="emit('dragstart', index)"
         @dragenter.prevent="emit('dragenter', index)"
         @dragover.prevent>

@@ -10,6 +10,8 @@ export const todos = ref([])
 export const intention = ref('all')
 /** 优先级筛选，null 表示不限；0/1/2 对应 P0/P1/P2 */
 export const priorityFilter = ref(null)
+/** 是否按优先级排序。关闭时沿用手动拖拽的顺序 */
+export const sortByPriority = ref(localStorage.getItem('uiineed-sort-priority') === '1')
 /** 是否正在与服务端同步 */
 export const syncing = ref(false)
 
@@ -39,9 +41,25 @@ export const filteredTodos = computed(() => {
     else list = activeTodos.value
 
     // 优先级是叠加在状态筛选之上的第二个维度，两者互不影响
-    if (priorityFilter.value === null) return list
-    return list.filter((todo) => todo.priority === priorityFilter.value)
+    if (priorityFilter.value !== null) {
+        list = list.filter((todo) => todo.priority === priorityFilter.value)
+    }
+
+    if (!sortByPriority.value) return list
+
+    // 必须排副本：这里的 list 直接引用着上游 computed 的结果，就地排序会污染它。
+    // sort 在现代引擎里是稳定的，所以同档位内仍保持用户拖出来的相对顺序。
+    return [...list].sort((a, b) => a.priority - b.priority)
 })
+
+/**
+ * 切换「按优先级排序」，并把选择记在本地，刷新后保持。
+ * @returns {void}
+ */
+export function toggleSortByPriority() {
+    sortByPriority.value = !sortByPriority.value
+    localStorage.setItem('uiineed-sort-priority', sortByPriority.value ? '1' : '0')
+}
 
 /**
  * 从服务端拉取当前用户的待办。
@@ -212,6 +230,10 @@ export function clearAll() {
  * @returns {void}
  */
 export function moveTodo(from, to) {
+    // 按优先级排序时，视图顺序由排序规则决定，手动换位只会被下一次渲染覆盖，
+    // 徒增困惑，所以直接不处理（UI 上也已经把拖拽关掉了）
+    if (sortByPriority.value) return
+
     const view = filteredTodos.value
     const source = view[from]
     const target = view[to]

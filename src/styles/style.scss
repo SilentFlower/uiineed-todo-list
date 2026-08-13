@@ -1891,3 +1891,14 @@ span.shortcut-name{
         background: var(--priority-color);
     }
 }
+
+/* 「按优先级排序」开关 */
+.action-sort {
+    width: 100%;
+    text-align: center;
+
+    &:hover,
+    &.selected {
+        background: var(--bg-submit);
+    }
+}

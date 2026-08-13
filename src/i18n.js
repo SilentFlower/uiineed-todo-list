@@ -70,6 +70,8 @@ const messages = {
         priorityNames: ['紧急', '重要', '普通'],
         priorityHint: '点击可切换优先级',
         filterByPriority: '按优先级筛选',
+        sortByPriority: '按优先级排序',
+        sortOnDragOff: '按优先级排序时不能拖拽调整顺序',
         // 对话框
         dialogTitle: '提示',
         confirmTitle: '请确认',
@@ -147,6 +149,8 @@ const messages = {
         priorityNames: ['Urgent', 'Important', 'Normal'],
         priorityHint: 'Click to change priority',
         filterByPriority: 'Filter by priority',
+        sortByPriority: 'Sort by priority',
+        sortOnDragOff: 'Drag to reorder is off while sorting by priority',
         dialogTitle: 'Notice',
         confirmTitle: 'Please confirm',
         errorTitle: 'Error',
