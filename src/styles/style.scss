@@ -1776,3 +1776,118 @@ span.shortcut-name{
     &.confirm { background: var(--completed); }
     &.cancel { background: var(--deleted); }
 }
+
+
+/**
+ * ── 优先级 ──
+ * 三档颜色直接取自既有调色板（珊瑚红 / 琥珀黄 / 薄荷青），
+ * 不引入新色调，保证和整体视觉是一套东西。
+ */
+:root {
+    --p0: #F6A89E;  // 紧急
+    --p1: #F5D99E;  // 重要
+    --p2: #8CD4CB;  // 普通
+}
+
+// 档位 → 颜色的映射，挂在哪个元素上，哪个元素就能用 --priority-color
+.priority-p0 { --priority-color: var(--p0); }
+.priority-p1 { --priority-color: var(--p1); }
+.priority-p2 { --priority-color: var(--p2); }
+
+/* 卡片左侧色条：不改动既有布局，用伪元素贴在内容区最左边，
+   宽度 10px 正好落在完成按钮（left:14px）左侧，互不遮挡 */
+.todo-body::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 10px;
+    background: var(--priority-color);
+    border-right: 2px solid var(--black);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+/* 正文前的优先级徽章，点击循环切换档位 */
+.priority-badge {
+    display: inline-block;
+    vertical-align: 1px;
+    margin-right: 8px;
+    padding: 0 9px;
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 20px;
+    letter-spacing: 0.5px;
+    color: var(--black);
+    background: var(--priority-color);
+    border: 2px solid var(--black);
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+
+    &:hover {
+        box-shadow: 2px 2px 0 var(--black);
+        transform: translate(-1px, -1px);
+    }
+}
+
+/* 已完成时删除线只作用于正文，徽章保持清晰 */
+.todo-body.completed .priority-badge {
+    text-decoration: none;
+    opacity: 0.7;
+}
+
+.todo-text {
+    text-decoration: inherit;
+}
+
+/* 新增框里的优先级选择器 */
+.priority-picker {
+    display: flex;
+    gap: 6px;
+}
+
+.priority-chip {
+    width: 40px;
+    padding: 8px 0;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--black);
+    background: #fff;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+
+    &:hover {
+        background: var(--priority-color);
+    }
+
+    // 选中态给足对比：填色 + 硬阴影 + 位移，和全站按钮的反馈方式一致
+    &.active {
+        background: var(--priority-color);
+        box-shadow: var(--box-shadow);
+        transform: translate(-2px, -2px);
+    }
+}
+
+/* 侧边栏的优先级筛选 */
+.todo-func-list.priority-filter {
+    display: flex;
+    gap: 0;
+}
+
+.priority-filter-btn {
+    width: 100%;
+    font-weight: 700;
+    // 未选中时也要能区分档位：用一条色块左边框标出对应颜色
+    // （input 元素不支持伪元素，所以走 border 而不是 ::before）
+    border-left: 10px solid var(--priority-color);
+
+    &:hover,
+    &.selected {
+        background: var(--priority-color);
+    }
+}

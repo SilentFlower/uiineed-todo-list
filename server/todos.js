@@ -7,10 +7,15 @@ const MAX_TITLE_LENGTH = 20000
 /** 单个用户的待办条数上限，防止异常写入撑爆库 */
 const MAX_TODOS = 5000
 
+/** 优先级取值：0=P0 最高，1=P1，2=P2 最低 */
+const PRIORITIES = [0, 1, 2]
+/** 未指定优先级时的默认档位 */
+const DEFAULT_PRIORITY = 2
+
 /**
  * 把数据库行转成前端使用的待办对象。
  * @param {object} row todos 表的一行
- * @returns {{id: string, title: string, images: object[], completed: boolean, removed: boolean, createdAt: number}} 待办对象
+ * @returns {{id: string, title: string, images: object[], completed: boolean, removed: boolean, priority: number, createdAt: number}} 待办对象
  */
 function rowToTodo(row) {
     return {
@@ -19,6 +24,7 @@ function rowToTodo(row) {
         images: JSON.parse(row.images || '[]'),
         completed: !!row.completed,
         removed: !!row.removed,
+        priority: row.priority,
         createdAt: row.created_at
     }
 }
@@ -69,6 +75,7 @@ function normalizeTodo(userId, raw) {
         images,
         completed: !!raw.completed,
         removed: !!raw.removed,
+        priority: PRIORITIES.includes(Number(raw.priority)) ? Number(raw.priority) : DEFAULT_PRIORITY,
         createdAt: Number(raw.createdAt) || Date.now()
     }
 }
@@ -109,13 +116,14 @@ export function replaceTodos(userId, incoming) {
 
         const now = Date.now()
         const upsert = db.prepare(
-            `INSERT INTO todos (id, user_id, title, images, completed, removed, position, created_at, updated_at)
-             VALUES (@id, @user_id, @title, @images, @completed, @removed, @position, @created_at, @updated_at)
+            `INSERT INTO todos (id, user_id, title, images, completed, removed, priority, position, created_at, updated_at)
+             VALUES (@id, @user_id, @title, @images, @completed, @removed, @priority, @position, @created_at, @updated_at)
              ON CONFLICT(id) DO UPDATE SET
                 title = excluded.title,
                 images = excluded.images,
                 completed = excluded.completed,
                 removed = excluded.removed,
+                priority = excluded.priority,
                 position = excluded.position,
                 updated_at = excluded.updated_at`
         )
@@ -127,6 +135,7 @@ export function replaceTodos(userId, incoming) {
                 images: JSON.stringify(todo.images),
                 completed: todo.completed ? 1 : 0,
                 removed: todo.removed ? 1 : 0,
+                priority: todo.priority,
                 position: index,
                 created_at: todo.createdAt,
                 updated_at: now

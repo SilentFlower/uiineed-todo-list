@@ -17,6 +17,7 @@ import {
     clearAll,
     clearCompleted,
     completedTodos,
+    DEFAULT_PRIORITY,
     emptyTrash,
     filteredTodos,
     flushIfPending,
@@ -25,6 +26,8 @@ import {
     loadTodos,
     markAllCompleted,
     moveTodo,
+    PRIORITY_LEVELS,
+    priorityFilter,
     recycleBin,
     todos
 } from '../composables/useTodos.js'
@@ -33,6 +36,7 @@ import { addTodo } from '../composables/useTodos.js'
 /* 新增框 */
 const newTodoTitle = ref('')
 const pendingImages = ref([])
+const newTodoPriority = ref(DEFAULT_PRIORITY)
 const checkEmpty = ref(false)
 const composeInput = ref(null)
 const fileInput = ref(null)
@@ -75,9 +79,10 @@ function submitTodo() {
         return
     }
 
-    addTodo(newTodoTitle.value.trim(), pendingImages.value)
+    addTodo(newTodoTitle.value.trim(), pendingImages.value, newTodoPriority.value)
     newTodoTitle.value = ''
     pendingImages.value = []
+    // 优先级不重置：连续录入同一批任务时通常档位相同，保留上次选择更省事
     checkEmpty.value = false
     nextTick(autoGrow)
 }
@@ -295,6 +300,16 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', flushIfPending)
                         <button type="button" class="btn submit-btn" @click="submitTodo">{{ t('submit') }}</button>
 
                         <div class="compose-tools">
+                            <div class="priority-picker">
+                                <button
+                                    v-for="level in PRIORITY_LEVELS"
+                                    :key="level"
+                                    type="button"
+                                    class="priority-chip"
+                                    :class="[`priority-p${level}`, { active: newTodoPriority === level }]"
+                                    :title="t('priorityNames')[level]"
+                                    @click="newTodoPriority = level">P{{ level }}</button>
+                            </div>
                             <button type="button" class="btn-add-image" :disabled="uploading" @click="fileInput.click()">
                                 🖼 {{ t('addImage') }}
                             </button>
@@ -418,6 +433,19 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', flushIfPending)
                                     :class="{ selected: intention === 'removed' }"
                                     :value="t('filterTrash')"
                                     @click="intention = 'removed'" />
+                            </li>
+                        </ul>
+
+                        <ul class="todo-func-list priority-filter">
+                            <li v-for="level in PRIORITY_LEVELS" :key="level">
+                                <!-- 再点一次已选中的档位即可取消筛选，不必额外放个「全部」按钮 -->
+                                <input
+                                    type="button"
+                                    class="btn-small priority-filter-btn"
+                                    :class="[`priority-p${level}`, { selected: priorityFilter === level }]"
+                                    :value="`P${level}`"
+                                    :title="t('priorityNames')[level]"
+                                    @click="priorityFilter = priorityFilter === level ? null : level" />
                             </li>
                         </ul>
 

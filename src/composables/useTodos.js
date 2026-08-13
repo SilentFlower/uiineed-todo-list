@@ -8,8 +8,15 @@ import { user } from './useAuth.js'
 export const todos = ref([])
 /** 当前筛选：all / ongoing / completed / removed */
 export const intention = ref('all')
+/** 优先级筛选，null 表示不限；0/1/2 对应 P0/P1/P2 */
+export const priorityFilter = ref(null)
 /** 是否正在与服务端同步 */
 export const syncing = ref(false)
+
+/** 优先级档位，索引即取值：0=P0 最高 */
+export const PRIORITY_LEVELS = [0, 1, 2]
+/** 新建待办时的默认优先级 */
+export const DEFAULT_PRIORITY = 2
 
 let saveTimer = null
 let pendingSave = false
@@ -25,10 +32,15 @@ export const recycleBin = computed(() => todos.value.filter((todo) => todo.remov
 
 /** 当前筛选下应展示的列表 */
 export const filteredTodos = computed(() => {
-    if (intention.value === 'ongoing') return leftTodos.value
-    if (intention.value === 'completed') return completedTodos.value
-    if (intention.value === 'removed') return recycleBin.value
-    return activeTodos.value
+    let list
+    if (intention.value === 'ongoing') list = leftTodos.value
+    else if (intention.value === 'completed') list = completedTodos.value
+    else if (intention.value === 'removed') list = recycleBin.value
+    else list = activeTodos.value
+
+    // 优先级是叠加在状态筛选之上的第二个维度，两者互不影响
+    if (priorityFilter.value === null) return list
+    return list.filter((todo) => todo.priority === priorityFilter.value)
 })
 
 /**
@@ -83,17 +95,31 @@ export function flushIfPending() {
  * 新增一条待办，插入到列表最前面。
  * @param {string} title 文本内容
  * @param {object[]} images 已上传的图片列表
+ * @param {number} priority 优先级，0=P0 / 1=P1 / 2=P2
  * @returns {void}
  */
-export function addTodo(title, images = []) {
+export function addTodo(title, images = [], priority = DEFAULT_PRIORITY) {
     todos.value.unshift({
         id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title,
         images,
         completed: false,
         removed: false,
+        priority,
         createdAt: Date.now()
     })
+    persist()
+}
+
+/**
+ * 设置某条待办的优先级。
+ * @param {object} todo 待办
+ * @param {number} priority 目标优先级
+ * @returns {void}
+ */
+export function setPriority(todo, priority) {
+    if (!PRIORITY_LEVELS.includes(priority)) return
+    todo.priority = priority
     persist()
 }
 

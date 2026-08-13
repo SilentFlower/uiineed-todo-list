@@ -149,6 +149,7 @@ app.post('/api/import', requireAuth, (req, res) => {
             images,
             completed: !!item.completed,
             removed: !!item.removed,
+            priority: item.priority,
             createdAt: Number(item.createdAt) || Date.now()
         })
     }

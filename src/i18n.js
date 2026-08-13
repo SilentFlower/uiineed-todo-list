@@ -65,6 +65,11 @@ const messages = {
         removeImage: '移除图片',
         imageTooLarge: '图片过大，请选择 10MB 以内的图片',
         imageFailed: '图片上传失败，请重试',
+        // 优先级
+        priority: '优先级',
+        priorityNames: ['紧急', '重要', '普通'],
+        priorityHint: '点击可切换优先级',
+        filterByPriority: '按优先级筛选',
         // 对话框
         dialogTitle: '提示',
         confirmTitle: '请确认',
@@ -138,6 +143,10 @@ const messages = {
         removeImage: 'Remove image',
         imageTooLarge: 'Image is too large, please keep it under 10MB',
         imageFailed: 'Image upload failed, please retry',
+        priority: 'Priority',
+        priorityNames: ['Urgent', 'Important', 'Normal'],
+        priorityHint: 'Click to change priority',
+        filterByPriority: 'Filter by priority',
         dialogTitle: 'Notice',
         confirmTitle: 'Please confirm',
         errorTitle: 'Error',

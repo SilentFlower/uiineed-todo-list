@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS todos (
     images     TEXT    NOT NULL DEFAULT '[]',
     completed  INTEGER NOT NULL DEFAULT 0,
     removed    INTEGER NOT NULL DEFAULT 0,
+    priority   INTEGER NOT NULL DEFAULT 2,
     position   INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -50,6 +51,25 @@ CREATE TABLE IF NOT EXISTS images (
 );
 CREATE INDEX IF NOT EXISTS idx_images_user ON images(user_id);
 `)
+
+/**
+ * 增量迁移：给已存在的表补上后来新增的列。
+ *
+ * 上面的 CREATE TABLE IF NOT EXISTS 只对全新的库生效，已经在跑的库不会被改动，
+ * 所以新增字段必须在这里显式 ALTER，否则升级后旧库会因缺列而报错。
+ *
+ * @returns {void}
+ */
+function migrate() {
+    const columns = db.prepare('PRAGMA table_info(todos)').all().map((column) => column.name)
+
+    // 优先级：0=P0 最高，1=P1，2=P2。存量待办统一按 P2 处理
+    if (!columns.includes('priority')) {
+        db.exec('ALTER TABLE todos ADD COLUMN priority INTEGER NOT NULL DEFAULT 2')
+    }
+}
+
+migrate()
 
 /**
  * 拼出某张图片在磁盘上的绝对路径。

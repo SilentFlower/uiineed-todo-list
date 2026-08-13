@@ -13,7 +13,8 @@ import {
     moveToTrash,
     persist,
     restoreTodo,
-    setCompleted
+    setCompleted,
+    setPriority
 } from '../composables/useTodos.js'
 import { imagesFromClipboard } from '../utils/image.js'
 
@@ -135,6 +136,15 @@ async function confirmDeleteForever() {
     if (!(await showConfirm(t('confirmDeleteForever')))) return
     deleteForever(props.todo)
 }
+
+/**
+ * 点击徽章循环切换优先级：P0 → P1 → P2 → P0。
+ * 比起弹下拉菜单，单击循环在只有三档时更快也更省地方。
+ * @returns {void}
+ */
+function cyclePriority() {
+    setPriority(props.todo, (props.todo.priority + 1) % 3)
+}
 </script>
 
 <template>
@@ -147,13 +157,17 @@ async function confirmDeleteForever() {
         @dragover.prevent>
         <!-- 展示态 -->
         <template v-if="!editing">
-            <div class="todo-body" :class="{ completed: todo.completed }">
+            <div class="todo-body" :class="[`priority-p${todo.priority}`, { completed: todo.completed }]">
                 <div
                     ref="contentEl"
                     class="todo-content"
                     :class="{ clamped: !expanded }"
                     @dblclick="startEdit">
-                    {{ todo.title }}
+                    <button
+                        type="button"
+                        class="priority-badge"
+                        :title="`${t('priorityNames')[todo.priority]} · ${t('priorityHint')}`"
+                        @click.stop="cyclePriority">P{{ todo.priority }}</button><span class="todo-text">{{ todo.title }}</span>
                 </div>
 
                 <div v-if="todo.images.length" class="todo-images">
