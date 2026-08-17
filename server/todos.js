@@ -15,7 +15,7 @@ const DEFAULT_PRIORITY = 2
 /**
  * 把数据库行转成前端使用的待办对象。
  * @param {object} row todos 表的一行
- * @returns {{id: string, title: string, images: object[], completed: boolean, removed: boolean, priority: number, createdAt: number}} 待办对象
+ * @returns {{id: string, title: string, images: object[], completed: boolean, removed: boolean, priority: number, createdAt: number, updatedAt: number, completedAt: number|null}} 待办对象
  */
 function rowToTodo(row) {
     return {
@@ -25,7 +25,9 @@ function rowToTodo(row) {
         completed: !!row.completed,
         removed: !!row.removed,
         priority: row.priority,
-        createdAt: row.created_at
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        completedAt: row.completed_at ?? null
     }
 }
 
@@ -76,8 +78,34 @@ function normalizeTodo(userId, raw) {
         completed: !!raw.completed,
         removed: !!raw.removed,
         priority: PRIORITIES.includes(Number(raw.priority)) ? Number(raw.priority) : DEFAULT_PRIORITY,
-        createdAt: Number(raw.createdAt) || Date.now()
+        createdAt: Number(raw.createdAt) || Date.now(),
+        // 这两个时间戳只在新建行（即导入历史数据）时被采信，已入库的待办一律以库中记录为准，
+        // 详见 replaceTodos 中的推算逻辑。0 表示「前端没给」
+        updatedAt: Number(raw.updatedAt) || 0,
+        completedAt: Number(raw.completedAt) || 0
     }
+}
+
+/**
+ * 判断待办内容相对于库中旧行是否发生了实质变化。
+ *
+ * 前端每次保存都是整表覆盖，若无条件把 updated_at 刷成当前时间，那么随便动一条待办，
+ * 所有待办的「更新时间」都会跟着跳变，这个字段也就失去了意义，所以这里逐字段比对。
+ * 拖拽排序只改变展示顺序、不算内容变更，因此 position 不参与比较。
+ *
+ * @param {object} before todos 表中的旧行
+ * @param {object} todo 清洗后的新待办
+ * @param {string} imagesJson 新待办图片列表序列化后的结果
+ * @returns {boolean} 内容是否变化
+ */
+function isContentChanged(before, todo, imagesJson) {
+    return (
+        before.title !== todo.title ||
+        before.images !== imagesJson ||
+        !!before.completed !== todo.completed ||
+        !!before.removed !== todo.removed ||
+        before.priority !== todo.priority
+    )
 }
 
 /**
@@ -101,6 +129,7 @@ export function replaceTodos(userId, incoming) {
 
     const apply = db.transaction(() => {
         const previous = db.prepare('SELECT * FROM todos WHERE user_id = ?').all(userId)
+        const previousById = new Map(previous.map((row) => [row.id, row]))
 
         const orphanImages = []
         const dropTodo = db.prepare('DELETE FROM todos WHERE id = ? AND user_id = ?')
@@ -116,8 +145,8 @@ export function replaceTodos(userId, incoming) {
 
         const now = Date.now()
         const upsert = db.prepare(
-            `INSERT INTO todos (id, user_id, title, images, completed, removed, priority, position, created_at, updated_at)
-             VALUES (@id, @user_id, @title, @images, @completed, @removed, @priority, @position, @created_at, @updated_at)
+            `INSERT INTO todos (id, user_id, title, images, completed, removed, priority, position, created_at, updated_at, completed_at)
+             VALUES (@id, @user_id, @title, @images, @completed, @removed, @priority, @position, @created_at, @updated_at, @completed_at)
              ON CONFLICT(id) DO UPDATE SET
                 title = excluded.title,
                 images = excluded.images,
@@ -125,20 +154,40 @@ export function replaceTodos(userId, incoming) {
                 removed = excluded.removed,
                 priority = excluded.priority,
                 position = excluded.position,
-                updated_at = excluded.updated_at`
+                updated_at = excluded.updated_at,
+                completed_at = excluded.completed_at`
         )
         normalized.forEach((todo, index) => {
+            const before = previousById.get(todo.id)
+            const images = JSON.stringify(todo.images)
+
+            // 新建的待办把更新时间对齐到创建时间，看起来才不像「刚建好就被改过」；
+            // 导入的历史数据则尊重文件里带来的值
+            let updatedAt
+            if (!before) updatedAt = todo.updatedAt || todo.createdAt
+            else updatedAt = isContentChanged(before, todo, images) ? now : before.updated_at
+
+            // 完成时间以服务端为准：取消完成即清空，重新完成就是新的时刻，
+            // 只有「本来就是完成态」才沿用旧值，避免每次保存都把它刷新一遍
+            let completedAt = null
+            if (todo.completed) {
+                if (before?.completed && before.completed_at) completedAt = before.completed_at
+                else if (!before) completedAt = todo.completedAt || now
+                else completedAt = now
+            }
+
             upsert.run({
                 id: todo.id,
                 user_id: userId,
                 title: todo.title,
-                images: JSON.stringify(todo.images),
+                images,
                 completed: todo.completed ? 1 : 0,
                 removed: todo.removed ? 1 : 0,
                 priority: todo.priority,
                 position: index,
                 created_at: todo.createdAt,
-                updated_at: now
+                updated_at: updatedAt,
+                completed_at: completedAt
             })
         })
     })

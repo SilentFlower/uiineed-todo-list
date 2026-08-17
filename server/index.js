@@ -150,7 +150,10 @@ app.post('/api/import', requireAuth, (req, res) => {
             completed: !!item.completed,
             removed: !!item.removed,
             priority: item.priority,
-            createdAt: Number(item.createdAt) || Date.now()
+            createdAt: Number(item.createdAt) || Date.now(),
+            // 导入的都是新行，这两个时间会被原样保留，历史记录才不会在导入后被抹平
+            updatedAt: Number(item.updatedAt) || 0,
+            completedAt: Number(item.completedAt) || 0
         })
     }
 

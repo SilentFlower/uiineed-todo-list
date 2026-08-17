@@ -1485,10 +1485,51 @@ span.shortcut-name{
     }
 }
 
-/* 已完成时只给文字加删除线，图片和展开按钮不受影响 */
-.todo-body.completed .todo-images,
-.todo-body.completed .todo-toggle {
+/* 删除线只画在正文上。
+   注意不能反过来做：text-decoration 会传播给所有后代，而后代再写 text-decoration: none
+   是取消不掉的（只有 inline-block 之类的原子行内盒天然不接收传播，比如展开按钮和徽章）。
+   所以让 .todo-body 不背这条线，改由正文自己画，时间信息等块级内容才不会被一起划掉 */
+.todo-body.completed {
     text-decoration: none;
+}
+
+.todo-body.completed .todo-text {
+    text-decoration: line-through;
+}
+
+/* 时间信息：创建 / 更新 / 完成 */
+.todo-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #8b8a85;
+    user-select: none;
+
+    // 分隔点交给 CSS 生成，模板里就不用为「哪几段会出现」去拼标点
+    span + span::before {
+        content: '·';
+        margin-right: 10px;
+    }
+
+    // 窄屏放不下一行，折行后分隔点会跑到行首，看着像个孤零零的标点。
+    // 这时干脆去掉它，只靠间距区分
+    @include respond-to('md') {
+        gap: 4px 16px;
+
+        span + span::before {
+            content: none;
+        }
+    }
+}
+
+/* 完成时间单独着色，和另外两段拉开区分。
+   这里不能直接用 --completed(#8CD4CB)：那是给块面填色的浅色，
+   落到 12px 小字上对比度不够，所以取它压暗后的同色系 */
+.meta-done {
+    color: #4a9c91;
 }
 
 /* 图片附件 */
@@ -1833,14 +1874,9 @@ span.shortcut-name{
     }
 }
 
-/* 已完成时删除线只作用于正文，徽章保持清晰 */
+/* 已完成时徽章淡一点，但保持清晰可读 */
 .todo-body.completed .priority-badge {
-    text-decoration: none;
     opacity: 0.7;
-}
-
-.todo-text {
-    text-decoration: inherit;
 }
 
 /* 新增框里的优先级选择器 */

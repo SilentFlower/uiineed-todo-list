@@ -7,6 +7,7 @@
 - 🔐 **账号登录**：用户名 + 密码登录，账号不存在时自动创建；每个账号的待办与图片完全隔离
 - 🖼 **图片附件**：`Ctrl / ⌘ + V` 直接粘贴图片，也可点按钮选择文件；点击缩略图看大图
 - 📖 **长内容折叠**：内容较多的待办默认收起，点「展开全部」再看完整内容
+- 🕒 **时间记录**：每条待办显示创建、更新与完成时间，鼠标悬停可看精确到秒的完整时间
 - 🗑 **回收站**：删除先进回收站，可还原；也可对单条彻底删除或一键清空，关联图片会一并从磁盘清除
 - 📦 **导入导出**：导出为自包含 JSON，图片以 base64 内嵌，换台机器导入即可还原
 - ✏️ 双击标语和待办可编辑，拖拽可排序（PC），所有提交支持回车
@@ -107,6 +108,7 @@ A minimalist web-based todo list with account login, image attachments, a trash 
 - 🔐 **Account login** — sign in with a username and password; the account is created automatically on first use, and each account's todos and images are fully isolated
 - 🖼 **Image attachments** — paste with `Ctrl / ⌘ + V`, or pick files with a button; click a thumbnail for the full-size view
 - 📖 **Collapsible content** — long todos are collapsed by default, expand them with one click
+- 🕒 **Timestamps** — every todo shows when it was created, updated and completed; hover for the exact time down to the second
 - 🗑 **Trash bin** — deleted items go to the trash and can be restored, or permanently deleted one by one / all at once, which also removes their images from disk
 - 📦 **Import & export** — export to a self-contained JSON with base64-embedded images, then import it anywhere
 - ✏️ Double-click to edit the slogan and todos, drag to reorder (PC), press Enter to submit

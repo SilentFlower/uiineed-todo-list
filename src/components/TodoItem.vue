@@ -18,6 +18,7 @@ import {
     sortByPriority
 } from '../composables/useTodos.js'
 import { imagesFromClipboard } from '../utils/image.js'
+import { formatFull, formatStamp } from '../utils/time.js'
 
 const props = defineProps({
     todo: { type: Object, required: true },
@@ -27,6 +28,8 @@ const emit = defineEmits(['preview', 'dragstart', 'dragenter'])
 
 /** 收起状态下最多展示的图片数量 */
 const COLLAPSED_IMAGE_LIMIT = 3
+/** 更新时间与创建时间相差多久才值得单独显示 */
+const UPDATED_VISIBLE_GAP = 60 * 1000
 
 const contentEl = ref(null)
 const editInput = ref(null)
@@ -46,6 +49,16 @@ const visibleImages = computed(() =>
 /** 收起时被折叠掉的图片数量，用于在最后一张上盖「+N」 */
 const hiddenImageCount = computed(() =>
     expanded.value ? 0 : Math.max(0, props.todo.images.length - COLLAPSED_IMAGE_LIMIT)
+)
+
+/**
+ * 是否显示更新时间。
+ *
+ * 刚建好的待办更新时间与创建时间相同，两个一模一样的时间并排出现只是噪音；
+ * 留一点间隔容差，免得网络往返带来的毫秒级差异也被当成「改过」。
+ */
+const showUpdated = computed(
+    () => props.todo.updatedAt && props.todo.updatedAt - props.todo.createdAt > UPDATED_VISIBLE_GAP
 )
 
 /**
@@ -190,6 +203,18 @@ function cyclePriority() {
                 <button v-if="hasMore" type="button" class="todo-toggle" @click="expanded = !expanded">
                     {{ expanded ? t('collapse') : t('expand') }}
                 </button>
+
+                <div class="todo-meta">
+                    <span :title="formatFull(todo.createdAt)">
+                        {{ t('timeCreated') }} {{ formatStamp(todo.createdAt) }}
+                    </span>
+                    <span v-if="showUpdated" :title="formatFull(todo.updatedAt)">
+                        {{ t('timeUpdated') }} {{ formatStamp(todo.updatedAt) }}
+                    </span>
+                    <span v-if="todo.completedAt" class="meta-done" :title="formatFull(todo.completedAt)">
+                        {{ t('timeCompleted') }} {{ formatStamp(todo.completedAt) }}
+                    </span>
+                </div>
             </div>
         </template>
 

@@ -72,6 +72,10 @@ const messages = {
         filterByPriority: '按优先级筛选',
         sortByPriority: '按优先级排序',
         sortOnDragOff: '按优先级排序时不能拖拽调整顺序',
+        // 时间
+        timeCreated: '创建',
+        timeUpdated: '更新',
+        timeCompleted: '完成',
         // 对话框
         dialogTitle: '提示',
         confirmTitle: '请确认',
@@ -151,6 +155,9 @@ const messages = {
         filterByPriority: 'Filter by priority',
         sortByPriority: 'Sort by priority',
         sortOnDragOff: 'Drag to reorder is off while sorting by priority',
+        timeCreated: 'Created',
+        timeUpdated: 'Updated',
+        timeCompleted: 'Done',
         dialogTitle: 'Notice',
         confirmTitle: 'Please confirm',
         errorTitle: 'Error',

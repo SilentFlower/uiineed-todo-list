@@ -26,16 +26,17 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS todos (
-    id         TEXT    PRIMARY KEY,
-    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    title      TEXT    NOT NULL DEFAULT '',
-    images     TEXT    NOT NULL DEFAULT '[]',
-    completed  INTEGER NOT NULL DEFAULT 0,
-    removed    INTEGER NOT NULL DEFAULT 0,
-    priority   INTEGER NOT NULL DEFAULT 2,
-    position   INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    id           TEXT    PRIMARY KEY,
+    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title        TEXT    NOT NULL DEFAULT '',
+    images       TEXT    NOT NULL DEFAULT '[]',
+    completed    INTEGER NOT NULL DEFAULT 0,
+    removed      INTEGER NOT NULL DEFAULT 0,
+    priority     INTEGER NOT NULL DEFAULT 2,
+    position     INTEGER NOT NULL DEFAULT 0,
+    created_at   INTEGER NOT NULL,
+    updated_at   INTEGER NOT NULL,
+    completed_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_todos_user ON todos(user_id, position);
 
@@ -66,6 +67,15 @@ function migrate() {
     // 优先级：0=P0 最高，1=P1，2=P2。存量待办统一按 P2 处理
     if (!columns.includes('priority')) {
         db.exec('ALTER TABLE todos ADD COLUMN priority INTEGER NOT NULL DEFAULT 2')
+    }
+
+    // 完成时间，NULL 表示未完成或时间未知。
+    //
+    // 存量数据刻意不回填：老库里根本没有记录过完成的时刻，而 updated_at 在此列加入前
+    // 是「整表覆盖时的当前时间」，几乎所有行都一样，拿它顶替等于编造数据。
+    // 保持 NULL，前端对老待办直接不显示这一段。
+    if (!columns.includes('completed_at')) {
+        db.exec('ALTER TABLE todos ADD COLUMN completed_at INTEGER')
     }
 }
 
