@@ -470,17 +470,25 @@ h1 {
     border: 0;
 }
 
-.submit-btn {
+// 输入框与提交按钮的定位上下文。
+// 按钮要跟着输入框一起长高，但不能把下面的工具栏、图片区也一起罩住，
+// 所以在 .add-content-wrapper 里再单独圈出这一层
+.compose-field {
     position: relative;
+}
+
+.submit-btn {
     box-sizing: border-box;
-    height: 60px;
-    line-height: 60px;
-    width: 96px;
-    padding: 0;
-    text-align: center;
     position: absolute;
     right: 2px;
     top: 2px;
+    // 上下都钉住，输入框换行长高时按钮和那条分隔竖线才会跟着拉长
+    bottom: 2px;
+    width: 96px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 0;
     border-left: var(--border);
     border-radius: 10px;
@@ -491,10 +499,6 @@ h1 {
     background: var(--bg-submit);
     transition: all 0.25s;
     font-size: 18px;
-
-    @include respond-to('md') {
-    margin:40px 0;
-    }
 }
 
 .submit-btn:hover {
@@ -503,18 +507,24 @@ h1 {
 
 .add-content {
     width: 100%;
-    padding: 0;
     font-size: 18px;
     cursor: text;
     border: var(--border);
     border-radius: var(--border-radius);
-    height: 64px;
-    line-height: 64px;
-    text-indent: 12px;
-    padding-right: 118px;
+    // textarea 默认是行内块，底部会多出一截基线留白，撑得 .compose-field 比输入框高，
+    // 靠 bottom 钉住的提交按钮就会探出去一点，改成块级即可对齐
+    display: block;
+    // 这里原来是 height/line-height 都写 64px 的单行居中写法，那是它还是 <input> 时留下的：
+    // 换成可换行的 textarea 后，64px 的行高会落到每一行上，两行之间空出一大截。
+    // 改成正常行高 + 上下内边距，单行时高度仍是 64px（26 + 17×2 + 边框 2×2）
+    min-height: 64px;
+    line-height: 26px;
+    // 左侧原先用 text-indent，那只缩进首行，折行后第二行会顶到最左边，所以改用 padding
+    padding: 17px 118px 17px 12px;
     box-shadow: var(--box-shadow);
+
     @include respond-to('md') {
-        padding-right:108px;
+        padding-right: 108px;
     }
 }
 

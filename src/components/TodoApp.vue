@@ -67,8 +67,12 @@ const canSubmit = computed(() => newTodoTitle.value.trim().length > 0 || pending
 function autoGrow() {
     const el = composeInput.value
     if (!el) return
+
     el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, 240)}px`
+    // 全站是 border-box，height 含边框，而 scrollHeight 不含。
+    // 直接把 scrollHeight 赋给 height 会矮上下边框那 4px，末行底部就被 overflow 切掉了
+    const border = el.offsetHeight - el.clientHeight
+    el.style.height = `${Math.min(el.scrollHeight + border, 240)}px`
 }
 
 /**
@@ -284,22 +288,26 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', flushIfPending)
                     </h1>
 
                     <div class="add-content-wrapper">
-                        <textarea
-                            ref="composeInput"
-                            v-model="newTodoTitle"
-                            rows="1"
-                            class="add-content"
-                            :class="{ empty: emptyChecked }"
-                            :placeholder="t('addPlaceholder')"
-                            @input="autoGrow"
-                            @paste="onComposePaste"
-                            @keydown.enter.exact.prevent="submitTodo"></textarea>
+                        <!-- 输入框与提交按钮绑成一组：按钮靠绝对定位贴住输入框右侧，
+                             单独包一层才能让它跟着输入框长高，而不会盖到下面的工具栏 -->
+                        <div class="compose-field">
+                            <textarea
+                                ref="composeInput"
+                                v-model="newTodoTitle"
+                                rows="1"
+                                class="add-content"
+                                :class="{ empty: emptyChecked }"
+                                :placeholder="t('addPlaceholder')"
+                                @input="autoGrow"
+                                @paste="onComposePaste"
+                                @keydown.enter.exact.prevent="submitTodo"></textarea>
+
+                            <button type="button" class="btn submit-btn" @click="submitTodo">{{ t('submit') }}</button>
+                        </div>
 
                         <transition name="tips">
                             <div v-if="emptyChecked" class="tips" style="color:red">{{ t('emptyTip') }}</div>
                         </transition>
-
-                        <button type="button" class="btn submit-btn" @click="submitTodo">{{ t('submit') }}</button>
 
                         <div class="compose-tools">
                             <div class="priority-picker">
